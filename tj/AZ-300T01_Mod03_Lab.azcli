@@ -57,7 +57,30 @@ cat ~/template03.json
 # The build process might take about 10 minutes
 ./packer build template03.json
 
+# Exercise 3: Deploying a custom image
+# ------------------------------------
+
+az vm create --resource-group $RGName \
+             --name az3000301-vm \
+             --image az3000301-image \
+             --admin-username student \
+             --generate-ssh-keys 
+
+az vm list -o table
+
+az vm open-port --resource-group $RGName \
+                --name az3000301-vm \
+                --port 80
+
+az network public-ip show --resource-group $RGName \
+                          --name az3000301-vmPublicIP \
+                          --query ipAddress
+
+# Start Microsoft Edge and navigate to the IP address you identified in the previous step.
+# Verify that Microsoft Edge displays the Welcome to nginx! page.
 
 
+# Cleaning up
+# -----------
 
-az group delete --name $RGName --yes --no-wait
+#az group delete --name $RGName --yes --no-wait
