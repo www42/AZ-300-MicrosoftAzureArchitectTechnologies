@@ -1,0 +1,63 @@
+az --version | grep azure-cli
+az account list
+
+
+# Exercise 1: Installing and configuring HashiCorp Packer
+# -------------------------------------------------------
+
+#wget https://releases.hashicorp.com/packer/1.3.1/packer_1.3.1_linux_amd64.zip
+#unzip packer_1.3.1_linux_amd64.zip
+wget https://releases.hashicorp.com/packer/1.3.5/packer_1.3.5_linux_amd64.zip
+unzip packer_1.3.5_linux_amd64.zip
+
+location="westeurope"
+RGName="az3000301-LabRG"
+RG=$(az group create --name $RGName --location $location)
+az group list -o table
+
+# service principal for packer
+AAD_SP=$(az ad sp create-for-rbac)
+echo $AAD_SP
+
+
+# Exercise 2: Creating a custom image
+# -----------------------------------
+
+CLIENT_ID=$(echo $AAD_SP | jq .appId | tr -d '"')
+echo $CLIENT_ID
+
+CLIENT_SECRET=$(echo $AAD_SP | jq .password | tr -d '"')
+echo $CLIENT_SECRET
+
+TENANT_ID=$(echo $AAD_SP | jq .tenant | tr -d '"')
+echo $TENANT_ID
+
+SUBSCRIPTION_ID=$(az account show --query id | tr -d '"')
+echo $SUBSCRIPTION_ID
+
+LOCATION=$(echo $RG | jq .location | tr -d '"')
+echo $LOCATION
+
+# Upload the Packer template \allfiles\AZ-300T01\Module_03\template03.json into the home directory!
+ll ~/template03.json
+
+# In the Packer template replace the placeholders
+sed -i.bak1 's/"$CLIENT_ID"/"'"$CLIENT_ID"'"/' ~/template03.json
+sed -i.bak2 's/"$CLIENT_SECRET"/"'"$CLIENT_SECRET"'"/' ~/template03.json
+sed -i.bak3 's/"$TENANT_ID"/"'"$TENANT_ID"'"/' ~/template03.json
+sed -i.bak4 's/"$SUBSCRIPTION_ID"/"'"$SUBSCRIPTION_ID"'"/' ~/template03.json
+sed -i.bak5 's/"$LOCATION"/"'"$LOCATION"'"/' ~/template03.json
+
+ll ~/template03.json*
+cat ~/template03.json
+
+./packer version
+./packer validate template03.json
+
+# The build process might take about 10 minutes
+./packer build template03.json
+
+
+
+
+az group delete --name $RGName --yes --no-wait
