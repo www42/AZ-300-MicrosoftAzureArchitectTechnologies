@@ -1,0 +1,79 @@
+az --version | grep azure-cli
+az account list
+
+
+# Exercise 1: Creating and configuring a user-assigned managed identity
+# ---------------------------------------------------------------------
+
+Location="westeurope"
+RGName="az3000501-LabRG"
+az group create --resource-group $RGName --location $Location
+az group list -o table
+
+# upload the Azure Resource Manager template \allfiles\AZ-300T01\Module_05\azuredeploy05.json into the home directory
+# upload the parameter file \allfiles\AZ-300T01\Module_05\azuredeploy05.parameters.json into the home directory
+ll ~/azuredeploy05*
+
+# This might take about 5 minutes
+az group deployment create --resource-group $RGName \
+                           --template-file azuredeploy05.json \
+                           --parameters @azuredeploy05.parameters.json
+
+az vm list --resource-group $RGName -o table
+
+ManagedId="az3000501-mi"
+az identity create --resource-group $RGName --name $ManagedId
+
+az identity list
+az identity list --query '[].{Name:name,ClientId:clientId}' -o table
+
+
+
+# =======================
+# JSON queries JMESPath
+# =======================
+#
+# https://docs.microsoft.com/en-us/cli/azure/query-azure-cli
+#
+# Alles ist case sensitive!
+#
+# Object = Directory = Key-Value Pairs = Hash
+# -------------------------------------------
+# { key1 : value,
+#   key2 : value }
+#
+# Array = collection of objects = List
+# ------------------------------------
+# [ 
+#     {  }
+#     {  } 
+# ]
+#
+#
+# Arrays haben einen Index (keinen Key).
+#
+# az commands that could return more than one object return an array, 
+# and commands that always return only a single object return a dictionary.
+
+# Get properties in a dictionary
+# ------------------------------
+az vm show -n az3000501-vm -g az3000501-LabRG --query resourceGroup
+az vm show -n az3000501-vm -g az3000501-LabRG --query osProfile
+az vm show -n az3000501-vm -g az3000501-LabRG --query osProfile.adminUsername
+
+# more than one property  --> [] multi select list
+az vm show -n az3000501-vm -g az3000501-LabRG --query '[resourceGroup,osProfile.adminUsername]'
+
+# more than one property --> {} multi select hash
+# {Displayname:JMESPath,Displayname:JMESPath,...}
+
+az vm show -n az3000501-vm -g az3000501-LabRG --query '{RG:resourceGroup,Admin:osProfile.adminUsername}'
+
+# Get properties in an array
+# --------------------------
+#
+#  []  flatten operator
+az vm list --query '[].{RG:resourceGroup,Admin:osProfile.adminUsername}'
+az vm list --query '[].{RG:resourceGroup,Admin:osProfile.adminUsername}' -o table
+
+[0].storageProfile.osDisk.osType
