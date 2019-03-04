@@ -10,6 +10,8 @@ if ($VMScaleSetName.Length -gt 9) {
 
 Test-AzDnsAvailability -DomainNameLabel $VMScaleSetName -Location $Location
 
+# Deploy Quickstart Template https://github.com/Azure/azure-quickstart-templates/tree/master/201-vmss-bottle-autoscale
+
 Get-AzVmss -VMScaleSetName $VMScaleSetName
 
 $RgName = 'az3000101-LabRG'
