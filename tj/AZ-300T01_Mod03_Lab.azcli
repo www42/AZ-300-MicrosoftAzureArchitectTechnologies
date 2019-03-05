@@ -57,6 +57,10 @@ cat ~/template03.json
 # The build process might take about 10 minutes
 ./packer build template03.json
 
+az image list -o table
+az image list --query '[].{Name:name,Location:location,OsType:storageProfile.osDisk.osType,Type:type}' -o table
+
+
 # Exercise 3: Deploying a custom image
 # ------------------------------------
 
@@ -70,7 +74,7 @@ az vm list -o table
 
 az vm open-port --resource-group $RGName \
                 --name az3000301-vm \
-                --port 80
+                --port 80 
 
 az network public-ip show --resource-group $RGName \
                           --name az3000301-vmPublicIP \
@@ -84,3 +88,8 @@ az network public-ip show --resource-group $RGName \
 # -----------
 
 #az group delete --name $RGName --yes --no-wait
+
+
+az ad sp create-for-rbac --name foo
+az ad sp list  --query '[].{appDisplayName:appDisplayName,appId:appId}' -o table
+az ad sp list  --query 'sort_by([].{appDisplayName:appDisplayName,appId:appId}, &appId)' -o table

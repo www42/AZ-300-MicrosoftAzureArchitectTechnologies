@@ -21,11 +21,22 @@ az group deployment create --resource-group $RGName \
 
 az vm list --resource-group $RGName -o table
 
+# create a user-assigned managed identity
 ManagedId="az3000501-mi"
 az identity create --resource-group $RGName --name $ManagedId
 
 az identity list
+az identity list -o table
 az identity list --query '[].{Name:name,ClientId:clientId}' -o table
+
+# assign the user-assigned managed identity to the Azure VM
+VMName="az3000501-vm"
+az vm identity assign --resource-group $RGName --name $VMName --identities $ManagedId
+
+
+az group create --resource-group az3000502-LabRG --location $Location
+
+
 
 
 
