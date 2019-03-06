@@ -1,0 +1,28 @@
+az --version | grep azure-cli
+az account list
+
+Location="westeurope"
+az group create --resource-group az3000401-LabRG --location $Location
+az group create --resource-group az3000402-LabRG --location $Location
+az group list -o table
+
+
+# Upload the first Azure Resource Manager template \allfiles\AZ-300T02\Module_03\azuredeploy0401.json into the home directory.
+# Upload the parameter file \allfiles\AZ-300T02\Module_03\azuredeploy04.parameters.json into the home directory.
+
+ll ~/azuredeploy04*
+
+az group deployment create --resource-group az3000401-LabRG \
+                           --template-file azuredeploy0401.json \
+                           --parameters @azuredeploy04.parameters.json
+# Do not wait.
+
+
+# Upload the second Azure Resource Manager template \allfiles\AZ-300T02\Module_03\azuredeploy0402.json into the home directory.
+
+ll ~/azuredeploy04*
+
+az group deployment create --resource-group az3000402-LabRG \
+                           --template-file azuredeploy0402.json \
+                           --parameters @azuredeploy04.parameters.json
+# Do not wait.
