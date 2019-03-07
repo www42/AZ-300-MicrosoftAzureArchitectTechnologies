@@ -1,0 +1,58 @@
+az --version | grep azure-cli
+az account list
+
+Location="westeurope"
+az group create --name az3000801-LabRG --location $Location
+
+# Exercise 1
+# ----------
+
+# Upload the Azure Resource Manager template \allfiles\AZ-300T03\Module_03\azuredeploy0801.json into the home directory.
+# Upload the parameter file \allfiles\AZ-300T03\Module_03\azuredeploy0801.parameters.json into the home directory.
+
+ll ~/azuredeploy0801.*
+
+az group deployment create --resource-group az3000801-LabRG \
+                           --template-file azuredeploy0801.json \
+                           --parameters @azuredeploy0801.parameters.json
+
+# Exercise 2
+# ----------
+
+# Upload the Azure Resource Manager template \allfiles\AZ-300T03\Module_03\azuredeploy0802.json into the home directory.
+# Upload the parameter file \allfiles\AZ-300T03\Module_03\azuredeploy0802.parameters.json into the home directory.
+
+ll ~/azuredeploy0802.*
+
+az group deployment create --resource-group az3000801-LabRG \
+                           --template-file azuredeploy0802.json \
+                           --parameters @azuredeploy0802.parameters.json
+
+az network public-ip create --resource-group az3000801-LabRG --name az3000802-lb-pip01 --sku standard
+
+LOCATION=$(az group show --name az3000801-LabRG --query location --out tsv)
+echo $LOCATION
+
+az network lb create \
+    --resource-group az3000801-LabRG \
+    --name az3000802-lb \
+    --sku standard \
+    --backend-pool-name az3000802-bepool \
+    --frontend-ip-name loadBalancedFrontEndOutbound \
+    --location $LOCATION \
+    --public-ip-address az3000802-lb-pip01
+
+az network lb outbound-rule create \
+    --resource-group az3000801-LabRG \
+    --lb-name az3000802-lb \
+    --name outboundRuleaz30000802 \
+    --frontend-ip-configs loadBalancedFrontEndOutbound \
+    --protocol All \
+    --idle-timeout 15 \
+    --outbound-ports 10000 \
+    --address-pool az3000802-bepool
+
+az network lb outbound-rule list --resource-group az3000801-LabRG --lb-name az3000802-lb -o table
+
+pip2=$(az network public-ip show --resource-group az3000801-LabRG --name az3000802-lb-pip01 --query ipAddress -o tsv) 
+echo $pip2
