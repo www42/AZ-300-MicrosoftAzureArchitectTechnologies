@@ -3,7 +3,8 @@ $keyContext = $storageAccount.Context
 
 $sasToken = New-AzStorageBlobSASToken -Container 'labcontainer' `
                                       -Blob 'splashscreen.contrast-white_scale-400.png' `
-                                      -Policy labcontainer-read -Context $keyContext
+                                      -Policy labcontainer-read 
+                                      -Context $keyContext
 
 $sasContext = New-AzStorageContext $storageAccount.StorageAccountName -SasToken $sasToken
 
