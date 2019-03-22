@@ -1,0 +1,75 @@
+# Exercise 1: Configure and validate an Azure Function App Storage Blob trigger
+# -----------------------------------------------------------------------------
+
+export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+echo $PREFIX
+# PREFIX='tia4ha'
+
+export LOCATION='westeurope'
+echo $LOCATION
+
+export RESOURCE_GROUP_NAME='az300T0602-LabRG'
+az group create --name "${RESOURCE_GROUP_NAME}" --location $LOCATION
+
+export STORAGE_ACCOUNT_NAME="az300t06st2${PREFIX}"
+export CONTAINER_NAME="workitems"
+export STORAGE_ACCOUNT=$(az storage account create --name "${STORAGE_ACCOUNT_NAME}" --kind "StorageV2" --location "${LOCATION}" --resource-group "${RESOURCE_GROUP_NAME}" --sku "Standard_LRS")
+az storage container create --name "${CONTAINER_NAME}" --account-name "${STORAGE_ACCOUNT_NAME}"
+
+export STORAGE_CONNECTION_STRING=$(az storage account show-connection-string --name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" -o tsv)
+echo $STORAGE_CONNECTION_STRING
+
+export FUNCTION_NAME="az300t06f${PREFIX}"
+az functionapp create --name "${FUNCTION_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --storage-account "${STORAGE_ACCOUNT_NAME}" --consumption-plan-location "${LOCATION}"
+
+az functionapp config appsettings set --name "${FUNCTION_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --settings "APPINSIGHTS_INSTRUMENTATIONKEY=$APPINSIGHTS_KEY" FUNCTIONS_EXTENSION_VERSION=~2
+az functionapp config appsettings set --name "${FUNCTION_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --settings "STORAGE_CONNECTION_STRING=$STORAGE_CONNECTION_STRING" FUNCTIONS_EXTENSION_VERSION=~2
+
+
+# run the following to upload a test blob to the Azure Storage account you created earlier in this task:
+export STORAGE_ACCESS_KEY="$(az storage account keys list --account-name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --query "[0].value" --output tsv)"
+export WORKITEM='workitem1.txt'
+touch "${WORKITEM}"
+az storage blob upload --file "${WORKITEM}" --container-name "${CONTAINER_NAME}" --name "${WORKITEM}" --auth-mode key --account-key "${STORAGE_ACCESS_KEY}" --account-name "${STORAGE_ACCOUNT_NAME}"
+
+
+# Exercise 2: Configure and validate an Azure Event Grid subscription-based queue messaging
+# -----------------------------------------------------------------------------------------
+
+export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+echo $PREFIX
+# PREFIX='cdrao0e'
+
+export RESOURCE_GROUP_NAME_EXISTING='az300T0602-LabRG'
+export LOCATION=$(az group list --query "[?name == '${RESOURCE_GROUP_NAME_EXISTING}'].location" --output tsv)
+export RESOURCE_GROUP_NAME='az300T0603-LabRG'
+az group create --name "${RESOURCE_GROUP_NAME}" --location $LOCATION
+
+# run the following to create an Azure Storage account and its container that will be used by the Event Grid subscription that you will configure in this task:
+export STORAGE_ACCOUNT_NAME="az300t06st3${PREFIX}"
+export CONTAINER_NAME="workitems"
+export STORAGE_ACCOUNT=$(az storage account create --name "${STORAGE_ACCOUNT_NAME}" --kind "StorageV2" --location "${LOCATION}" --resource-group "${RESOURCE_GROUP_NAME}" --sku "Standard_LRS")
+az storage container create --name "${CONTAINER_NAME}" --account-name "${STORAGE_ACCOUNT_NAME}"
+
+export STORAGE_ACCOUNT_ID=$(az storage account show --name "${STORAGE_ACCOUNT_NAME}" --query "id" --resource-group "${RESOURCE_GROUP_NAME}" -o tsv)
+
+export QUEUE_NAME="az300t06q3${PREFIX}"
+az storage queue create --name "${QUEUE_NAME}" --account-name "${STORAGE_ACCOUNT_NAME}"
+
+az provider register --namespace Microsoft.EventGrid
+
+export QUEUE_SUBSCRIPTION_NAME="az300t06qsub3${PREFIX}"
+az eventgrid event-subscription create --name "${QUEUE_SUBSCRIPTION_NAME}" --included-event-types 'Microsoft.Storage.BlobCreated' --endpoint "${STORAGE_ACCOUNT_ID}/queueservices/default/queues/${QUEUE_NAME}" --endpoint-type "storagequeue" --source-resource-id "${STORAGE_ACCOUNT_ID}"
+
+
+# run the following to upload a test blob to the Azure Storage account you created earlier in this task:
+export AZURE_STORAGE_ACCESS_KEY="$(az storage account keys list --account-name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --query "[0].value" --output tsv)"
+export WORKITEM='workitem2.txt'
+touch "${WORKITEM}"
+az storage blob upload \
+    --file "${WORKITEM}" \
+    --container-name "${CONTAINER_NAME}" \
+    --name "${WORKITEM}" \
+    --auth-mode key \
+    --account-key "${AZURE_STORAGE_ACCESS_KEY}" \
+    --account-name "${STORAGE_ACCOUNT_NAME}"
