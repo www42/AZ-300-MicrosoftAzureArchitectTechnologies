@@ -18,7 +18,7 @@ kubectl config get-contexts
 kubectl cluster-info
 kubectl get pods
 kubectl run nginx --image=nginx
-kubectl expose deployment nginx --port=80
+kubectl expose deployment nginx --port=80 --type=LoadBalancer
 kubectl get deployment
 kubectl get service
 
