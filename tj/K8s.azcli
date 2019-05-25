@@ -1,0 +1,28 @@
+# Variables
+LOCATION=westeurope
+KUBE_GROUP=myKube-RG
+KUBE_NAME=koeln-aks
+
+# Create resource group
+az group create -n $KUBE_GROUP -l $LOCATION
+
+# Create 3 node cluster
+az aks create --name $KUBE_NAME --resource-group $KUBE_GROUP --node-count 3 
+az aks list -o table
+
+# Get context
+az aks get-credentials --resource-group=$KUBE_GROUP --name=$KUBE_NAME
+cat .kube/config
+kubectl config get-contexts
+
+# Get basic information
+kubectl cluster-info
+kubectl get pods
+kubectl run nginx --image=nginx
+kubectl expose deployment nginx --port=80 --type=LoadBalancer
+kubectl get deployment
+kubectl get service
+
+# Enable dashboard
+kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
+az aks browse --name $KUBE_NAME --resource-group $KUBE_GROUP

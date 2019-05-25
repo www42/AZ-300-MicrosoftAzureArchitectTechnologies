@@ -15,6 +15,6 @@ Get-AZResourceGroup | ft ResourceGroupName,Location
 
 dir ~/azuredeploy06.*
 
-New-AzResourceGroupDeployment -ResourceGroupName $RGName1 `
+New-AzResourceGroupDeployment -ResourceGroupName $RGName `
                               -TemplateFile ~/azuredeploy06.json `
                               -TemplateParameterFile ~/azuredeploy06.parameters.json
