@@ -1,3 +1,4 @@
+# Variables
 LOCATION=westeurope
 KUBE_GROUP=myKube-RG
 KUBE_NAME=koeln-aks
