@@ -1,7 +1,7 @@
 # Variables
 LOCATION=westeurope
-KUBE_GROUP=myKube-RG
-KUBE_NAME=koeln-aks
+KUBE_GROUP=kubernetes-RG
+KUBE_NAME=hh-aks
 
 # Create resource group
 az group create -n $KUBE_GROUP -l $LOCATION
