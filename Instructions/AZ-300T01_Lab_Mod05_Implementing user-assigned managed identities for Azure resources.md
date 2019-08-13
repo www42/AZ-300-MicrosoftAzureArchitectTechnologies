@@ -62,7 +62,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, upload the parameter file **\\allfiles\\AZ-300T01\\Module_05\\azuredeploy05.parameters.json** into the home directory.
 
-1. From the Cloud Shell pane, deploy the two Azure VMs hosting Windows Server 2016 Datacenter into the first virtual network by running:
+1. From the Cloud Shell pane, deploy an Azure VM hosting Windows Server 2016 Datacenter into the first virtual network by running:
 
    ```
    az group deployment create --resource-group az3000501-LabRG --template-file azuredeploy05.json --parameters @azuredeploy05.parameters.json
@@ -124,7 +124,7 @@ The main tasks for this exercise are as follows:
    Install-Module -Name PowerShellGet -Force
    ```
 
-1. From the PowerShell prompt, run the following to install the latest version of the Az module (press Enter if prompted for confirmation):
+1. From the PowerShell prompt, run the following to install the latest version of the Az module (type **Y** and press Enter when prompted for confirmation):
 
    ```pwsh
    Install-Module -Name Az -AllowClobber
