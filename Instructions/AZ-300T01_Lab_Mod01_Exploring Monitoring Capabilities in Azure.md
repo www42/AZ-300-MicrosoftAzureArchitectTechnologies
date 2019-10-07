@@ -46,7 +46,7 @@ The main tasks for this exercise are as follows:
 
    - Storage account: a name of a new storage account (between 3 and 24 characters consisting of lower case letters and digits)
 
-   - File share: a name of a new file share: **cloudshell*
+   - File share: a name of a new file share: **cloudshell**
 
 1. From the Cloud Shell pane, run the following command to identify a unique DNS domain name (substitute the placeholder `<custom-label>` with any alphanumeric string starting with a letter and no longer than 9 characters, which is likely to be unique and the placeholder `<location>` with the name of the Azure region into which you intend to deploy resources in this lab):
 
@@ -139,7 +139,7 @@ The main tasks for this exercise are as follows:
 
 1. In the **Condition** section, click **Add condition**, select the **Percentage CPU** metric, leave the dimension settings and condition type with their default values, set the condition to **Greater than**, set the time aggregation to **Average**, set the threshold to **60**, set the Aggregation granularity (period) to **1 minute**, set the frequency to **Every 1 minute** and click **done**.
 
-1. In the **Action** section, click **Add action**, select previously created action and click **done**.
+1. In the **Actions** section, click **Select action group**, select previously created action group **az30001 action group** and click **done**.
 
 1. In the **Alert Details** section, set the alert rule name to **Percentage CPU of the VM scale set is greater than 60 percent**, its description to **Percentage CPU of the VM scale set is greater than 60 percent**, its severity to **Sev 3**, and set enable rule upon creation to **Yes**.
 
@@ -191,7 +191,7 @@ The main tasks for this exercise are as follows:
 
 ### Task 1: Delete resource group
 
-1. At the top of the portal, click the **Cloud Shell** icon to open the Cloud Shell pane.
+1. At the top of the portal, click the **Cloud Shell** icon to open the Cloud Shell pannel and swicth to the Bash shell if necessary.
 
 1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to list all resource groups you created in this lab:
 
@@ -206,7 +206,7 @@ The main tasks for this exercise are as follows:
 1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to delete the resource groups you created in this lab
 
    ```
-   az group list --query "[?starts_with(name,'az300010')].[name]" --output tsv | %{az group delete -n $_ --no-wait -y}
+   az group list --query "[?starts_with(name,'az300010')].[name]" --output tsv | xargs -L1 bash -c 'az group delete --name $0 --no-wait --yes'
    ```
 
 1. Close the **Cloud Shell** prompt at the bottom of the portal.
