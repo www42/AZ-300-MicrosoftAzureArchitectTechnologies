@@ -70,7 +70,7 @@ The main tasks for this exercise are as follows:
 1. From the Cloud Shell pane, run the following to generate a pseudo-random string of characters that will be used as a prefix for names of resources you will provision in this exercise:
 
    ```sh
-   export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+   export PREFIX=$(echo `openssl rand -base64 5 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
    ```
 
 1. From the Cloud Shell pane, run the following to designate the Azure region into which you want to provision resources in this lab (make sure to replace the placeholder `<Azure region>` with the name of the target Azure region and remove any spaces in the region name):
@@ -139,13 +139,9 @@ The main tasks for this exercise are as follows:
 
 1. On the **Function App runtime stack** blade, ensure that the **.NET** entry appears in the **Function Runtime stack** drop down list and click **Go**.
 
-1. Select **In Portal** and then click **Continue**.
-
-1. Select **More Templates..** and then click **Finish and view templates**.
-
 1. On the **Choose a template below or go to the quickstart** blade, click **Azure Blob Storage trigger** template.
 
-1. On the **Extensions not Installed** blade, click **Install** and wait until the installation of the extension completes. Wait until the installation completes and click **Continue**.
+1. On the **Extensions not Installed** blade, click **Install**. Wait until the installation completes and click **Continue**.
 
     > **Note**: Azure Functions V2 runtime implement bindings in the form of Nuget packages, referred to as "binding extensions" (in particular, the Azure Storage Blob binding uses the Microsoft.Azure.WebJobs.Extensions.Storage package). 
 
@@ -225,7 +221,7 @@ The main tasks for this exercise are as follows:
 1. From the Cloud Shell pane, run the following to generate a pseudo-random string of characters that will be used as a prefix for names of resources you will provision in this exercise:
 
    ```sh
-   export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+   export PREFIX=$(echo `openssl rand -base64 5 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
    ```
 
 1. From the Cloud Shell pane, run the following to identify the Azure region hosting the target resource group and its existing resources: 
