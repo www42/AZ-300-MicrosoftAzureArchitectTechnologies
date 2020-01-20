@@ -1,28 +1,23 @@
 az --version | grep azure-cli
-az account list
-
+az account list -o table
+az login
 
 # Exercise 1: Installing and configuring HashiCorp Packer
 # -------------------------------------------------------
 
-#wget https://releases.hashicorp.com/packer/1.3.1/packer_1.3.1_linux_amd64.zip
-#unzip packer_1.3.1_linux_amd64.zip
-wget https://releases.hashicorp.com/packer/1.3.5/packer_1.3.5_linux_amd64.zip
-unzip packer_1.3.5_linux_amd64.zip
-
+# Task 1: Configure a Packer template
+#
+# Create resource group
 location="westeurope"
 RGName="az3000301-LabRG"
 RG=$(az group create --name $RGName --location $location)
 az group list -o table
 
-# service principal for packer
+# Create service principal for packer
 AAD_SP=$(az ad sp create-for-rbac)
 echo $AAD_SP
 
-
-# Exercise 2: Creating a custom image
-# -----------------------------------
-
+# Retrieve values of the service principal
 CLIENT_ID=$(echo $AAD_SP | jq .appId | tr -d '"')
 echo $CLIENT_ID
 
@@ -39,7 +34,8 @@ LOCATION=$(echo $RG | jq .location | tr -d '"')
 echo $LOCATION
 
 # Upload the Packer template \allfiles\AZ-300T01\Module_03\template03.json into the home directory!
-ll ~/template03.json
+MYTEMPLATE03="tj/template03.json"
+cp allfiles/AZ-300T01/Module_03/template03.json $MYTEMPLATE03
 
 # In the Packer template replace the placeholders
 sed -i.bak1 's/"$CLIENT_ID"/"'"$CLIENT_ID"'"/' ~/template03.json
@@ -59,6 +55,12 @@ cat ~/template03.json
 
 az image list -o table
 az image list --query '[].{Name:name,Location:location,OsType:storageProfile.osDisk.osType,Type:type}' -o table
+
+
+# Exercise 2: Creating a custom image
+# -----------------------------------
+
+
 
 
 # Exercise 3: Deploying a custom image
