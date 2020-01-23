@@ -22,3 +22,18 @@ cat $HOME/customRoleDefinition09.json
 New-AzRoleDefinition -InputFile $HOME/customRoleDefinition09.json
 
 Get-AzRoleDefinition -Name 'Virtual Machine Operator (Custom)'
+Get-AzRoleDefinition -Name 'Virtual Machine Operator (Custom)' | % Actions
+
+
+# Exercise 2: Assign and test a custom RBAC role
+$domainName = ((Get-AzureAdTenantDetail).VerifiedDomains)[0].Name
+$passwordProfile = New-Object -TypeName Microsoft.Open.AzureAD.Model.PasswordProfile
+$passwordProfile.Password = 'Pa55w.rd1234'
+$passwordProfile.ForceChangePasswordNextLogin = $false
+New-AzureADUser -AccountEnabled $true -DisplayName 'lab user0901' -PasswordProfile $passwordProfile -MailNickName 'labuser0901' -UserPrincipalName "labuser0901@$domainName"
+(Get-AzureADUser -Filter "MailNickName eq 'labuser0901'").UserPrincipalName
+
+Get-AzRoleDefinition -Name Owner | % Actions
+Get-AzRoleDefinition -Name "Data Box Reader" | % Actions
+Get-AzRoleDefinition -Name "Data Box Reader" | % NotActions
+Get-AzRoleDefinition | ft Name, Description
