@@ -2,10 +2,11 @@ az --version | grep azure-cli
 az account list -o table
 az login
 
-# Exercise 1: Installing and configuring HashiCorp Packer
-# -------------------------------------------------------
+# Exercise 1: Exercise 1: Creating a custom image
+# ===============================================
 
 # Task 1: Configure a Packer template
+# -----------------------------------
 #
 # Create resource group
 location="westeurope"
@@ -33,9 +34,10 @@ echo $SUBSCRIPTION_ID
 LOCATION=$(echo $RG | jq .location | tr -d '"')
 echo $LOCATION
 
-# Upload the Packer template \allfiles\AZ-300T01\Module_03\template03.json into the home directory!
-MYTEMPLATE03="tj/template03.json"
-cp allfiles/AZ-300T01/Module_03/template03.json $MYTEMPLATE03
+# Copy the Packer template allfiles/AZ-300T01/Module_03/template03.json into the home directory
+cp allfiles/AZ-300T01/Module_03/template03.json ~/
+ll ~/template03.json*
+cat ~/template03.json
 
 # In the Packer template replace the placeholders
 sed -i.bak1 's/"$CLIENT_ID"/"'"$CLIENT_ID"'"/' ~/template03.json
@@ -44,28 +46,25 @@ sed -i.bak3 's/"$TENANT_ID"/"'"$TENANT_ID"'"/' ~/template03.json
 sed -i.bak4 's/"$SUBSCRIPTION_ID"/"'"$SUBSCRIPTION_ID"'"/' ~/template03.json
 sed -i.bak5 's/"$LOCATION"/"'"$LOCATION"'"/' ~/template03.json
 
-ll ~/template03.json*
-cat ~/template03.json
+#sudo apt-get install packer
+packer version
+packer validate ~/template03.json
 
-./packer version
-./packer validate template03.json
-
+# Task 2: Build a Packer-based image
+# -----------------------------------
 # The build process might take about 10 minutes
-./packer build template03.json
+packer build ~/template03.json
 
 az image list -o table
 az image list --query '[].{Name:name,Location:location,OsType:storageProfile.osDisk.osType,Type:type}' -o table
 
 
-# Exercise 2: Creating a custom image
-# -----------------------------------
 
 
-
-
-# Exercise 3: Deploying a custom image
-# ------------------------------------
-
+# Exercise 2: Deploying a custom image
+# ====================================
+# Task 1: Deploy an Azure VM based on a custom image
+# --------------------------------------------------
 az vm create --resource-group $RGName \
              --name az3000301-vm \
              --image az3000301-image \
