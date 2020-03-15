@@ -1,4 +1,4 @@
-Get-AzSubscription
+Get-AzContext
 
 $password = 'Pa55w.rd1234'
 $securePassword = ConvertTo-SecureString -Force -AsPlainText -String $password
@@ -8,7 +8,7 @@ New-AzADServicePrincipal -ApplicationId $aadApp30007.ApplicationId.Guid
 
 # In the output of the New-AzureRmADServicePrincipal command, note the value of the ApplicationId property.
 # You will need this in the next exercise of this lab.
-$ApplicationId = '6fe11541-1c42-4106-834f-676a7d816185'
+$ApplicationId = 'a513306d-15e5-4bec-ae4f-8af09eb7731a'
 
 $SubscriptionId = Get-AzSubscription | % Id
 $SubscriptionId = '8e98030c-b252-4fbf-98ae-07bde0229d90'

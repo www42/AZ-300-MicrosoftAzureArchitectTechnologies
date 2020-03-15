@@ -1,5 +1,5 @@
 az --version | grep azure-cli
-az account list
+az account list -o table
 
 
 # Exercise 1: Creating and configuring a user-assigned managed identity
