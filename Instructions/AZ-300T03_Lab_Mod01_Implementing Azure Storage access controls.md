@@ -53,12 +53,14 @@ The main tasks for this exercise are as follows:
     - Account kind: **Storage (general purpose v1)**
 
     - Replication: **Locally-redundant storage (LRS)**
-
+    
     - Secure transfer required: **Disabled**
 
-    - Virtual network: **All networks**
+    - Network connectivity: **Public endpoint (All networks)**
 
-    - Hierarchical namespace: **Disabled**
+    - Blob soft delete: **Disabled**
+
+    - Data Lake Storage Gen2: **Disabled**
 
 1. Wait for the storage account to be provisioned. This will take about a minute.
 
@@ -156,31 +158,31 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to identify the storage account resource you created in the first exercise of this lab and store it in a variable:
 
-   ```
+   ```pwsh
    $storageAccount = (Get-AzStorageAccount -ResourceGroupName az3000201-LabRG)[0]
    ```
 
 1. From the Cloud Shell pane, run the following to establish security context granting full control to the storage account:
 
-   ```
+   ```pwsh
    $keyContext = $storageAccount.Context
    ```
 
 1. From the Cloud Shell pane, run the following to create a blob-specific SAS token based on the access policy you created in the previous task:
 
-   ```
+   ```pwsh
    $sasToken = New-AzStorageBlobSASToken -Container 'labcontainer' -Blob 'splashscreen.contrast-white_scale-400.png' -Policy labcontainer-read -Context $keyContext
    ```
 
 1. From the Cloud Shell pane, run the following to establish security context based on the newly created SAS token: 
 
-   ```
+   ```pwsh
    $sasContext = New-AzStorageContext $storageAccount.StorageAccountName -SasToken $sasToken
    ```
 
 1. From the Cloud Shell pane, run the following to retrieve properties of the blob: 
 
-   ```
+   ```pwsh
    Get-AzStorageBlob -Container 'labcontainer' -Blob 'splashscreen.contrast-white_scale-400.png' -Context $sasContext
    ```
 
@@ -199,7 +201,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, re-run the following to attempt retrieving properties of the blob: 
 
-   ```
+   ```pwsh
    Get-AzStorageBlob -Container 'labcontainer' -Blob 'splashscreen.contrast-white_scale-400.png' -Context $sasContext
    ```
 
@@ -207,3 +209,31 @@ The main tasks for this exercise are as follows:
 
 
 > **Result**: After you completed this exercise, you have created a blob container, uploaded a file into it, and tested access control by using a SAS token and a stored access policy.
+
+## Exercise 3: Remove lab resources
+
+#### Task 1: Open Cloud Shell
+
+1. At the top of the portal, click the **Cloud Shell** icon to open the Cloud Shell pane.
+
+1. If needed, switch to the Bash shell session by using the drop down list in the upper left corner of the Cloud Shell pane.
+
+1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to list all resource groups you created in this lab:
+
+   ```
+   az group list --query "[?starts_with(name,'az30002')]".name --output tsv
+   ```
+
+1. Verify that the output contains only the resource groups you created in this lab. These groups will be deleted in the next task.
+
+#### Task 2: Delete resource groups
+
+1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to delete the resource groups you created in this lab
+
+   ```sh
+   az group list --query "[?starts_with(name,'az30002')]".name --output tsv | xargs -L1 bash -c 'az group delete --name $0 --no-wait --yes'
+   ```
+
+1. Close the **Cloud Shell** prompt at the bottom of the portal.
+
+> **Result**: In this exercise, you removed the resources used in this lab.

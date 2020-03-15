@@ -69,27 +69,27 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to generate a pseudo-random string of characters that will be used as a prefix for names of resources you will provision in this exercise:
 
-   ```
-   export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+   ```sh
+   export PREFIX=$(echo `openssl rand -base64 5 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
    ```
 
-1. From the Cloud Shell pane, run the following to designate the Azure region into which you want to provision resources in this lab (make sure to replace the placeholder `<Azure region>` with the name of the target Azure region):
+1. From the Cloud Shell pane, run the following to designate the Azure region into which you want to provision resources in this lab (make sure to replace the placeholder `<Azure region>` with the name of the target Azure region and remove any spaces in the region name):
 
-   ```
+   ```sh
    export LOCATION='<Azure_region>'
    ```
 
 1. From the Cloud Shell pane, run the following to create a resource group that will host all resources that you will provision in this lab:
 
-   ```
+   ```sh
    export RESOURCE_GROUP_NAME='az300T0602-LabRG'
 
-   az group create --name "${RESOURCE_GROUP_NAME}" --location $LOCATION
+   az group create --name "${RESOURCE_GROUP_NAME}" --location "$LOCATION"
    ```
 
 1. From the Cloud Shell pane, run the following to create an Azure Storage account and a container that will host blobs to be processed by the Azure function:
 
-   ```
+   ```sh
    export STORAGE_ACCOUNT_NAME="az300t06st2${PREFIX}"
 
    export CONTAINER_NAME="workitems"
@@ -103,13 +103,13 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to create a variable storing the value of the connection string property of the Azure Storage account:
 
-   ```
+   ```sh
    export STORAGE_CONNECTION_STRING=$(az storage account show-connection-string --name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" -o tsv)
    ```
 
 1. From the Cloud Shell pane, run the following to create an Application Insights resource that will provide monitoring of the Azure Function processing blobs and store its key in a variable:
 
-   ```
+   ```sh
    export APPLICATION_INSIGHTS_NAME="az300t06ai${PREFIX}"
 
    az resource create --name "${APPLICATION_INSIGHTS_NAME}" --location "${LOCATION}" --properties '{"Application_Type": "other", "ApplicationId": "function", "Flow_Type": "Redfield"}' --resource-group "${RESOURCE_GROUP_NAME}" --resource-type "Microsoft.Insights/components"
@@ -119,7 +119,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to create the Azure Function that will process events corresponding to creation of Azure Storage blobs:
 
-   ```
+   ```sh
    export FUNCTION_NAME="az300t06f${PREFIX}"
 
    az functionapp create --name "${FUNCTION_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --storage-account "${STORAGE_ACCOUNT_NAME}" --consumption-plan-location "${LOCATION}"
@@ -127,7 +127,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to configure Application Settings of the newly created function, linking it to the Application Insights and Azure Storage account:
 
-   ```
+   ```sh
    az functionapp config appsettings set --name "${FUNCTION_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --settings "APPINSIGHTS_INSTRUMENTATIONKEY=$APPINSIGHTS_KEY" FUNCTIONS_EXTENSION_VERSION=~2
 
    az functionapp config appsettings set --name "${FUNCTION_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --settings "STORAGE_CONNECTION_STRING=$STORAGE_CONNECTION_STRING" FUNCTIONS_EXTENSION_VERSION=~2
@@ -141,7 +141,7 @@ The main tasks for this exercise are as follows:
 
 1. On the **Choose a template below or go to the quickstart** blade, click **Azure Blob Storage trigger** template.
 
-1. On the **Extensions not Installed** blade, click **Install** and wait until the installation of the extension completes. Wait until the installation completes and click **Continue**.
+1. On the **Extensions not Installed** blade, click **Install**. Wait until the installation completes and click **Continue**.
 
     > **Note**: Azure Functions V2 runtime implement bindings in the form of Nuget packages, referred to as "binding extensions" (in particular, the Azure Storage Blob binding uses the Microsoft.Azure.WebJobs.Extensions.Storage package). 
 
@@ -155,7 +155,7 @@ The main tasks for this exercise are as follows:
 
 1. On the Azure Function app **BlobTrigger** function blade, review the content of the run.csx file. 
 
-   ```
+   ```csharp
    public static void Run(Stream myBlob, string name, ILogger log)
    {
        log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
@@ -171,7 +171,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to repopulate variables that you used in the previous task:
 
-   ```
+   ```sh
    export RESOURCE_GROUP_NAME='az300T0602-LabRG'
 
    export STORAGE_ACCOUNT_NAME="$(az storage account list --resource-group "${RESOURCE_GROUP_NAME}" --query "[0].name" --output tsv)"
@@ -181,7 +181,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to upload a test blob to the Azure Storage account you created earlier in this task:
 
-   ```
+   ```sh
    export STORAGE_ACCESS_KEY="$(az storage account keys list --account-name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --query "[0].value" --output tsv)"
 
    export WORKITEM='workitem1.txt'
@@ -200,7 +200,7 @@ The main tasks for this exercise are as follows:
     > **Note**: Since the Azure function app in this exercise runs in the Consumption plan, there may be a delay of up to several minutes between uploading a blob and the function being triggered. It is possible to minimize the latency by implementing the Function app by using an App Service (rather than Consumption) plan.
 
 
-1. On the **Invocation Details** blade, click the link **Run in Application Insights**.
+1. Go back to the **Monitor** blade, and click the link **Run in Application Insights**.
 
 1. In the Application Insights portal, review the autogenerated Kusto query and its results.
 
@@ -218,15 +218,21 @@ The main tasks for this exercise are as follows:
 
 1. If necessary, restart the Bash session in the Cloud Shell.
 
+1. From the Cloud Shell pane, run the following to register the eventgrid resource provider in your subscription:
+
+   ```sh
+   az provider register --namespace microsoft.eventgrid
+   ```
+  
 1. From the Cloud Shell pane, run the following to generate a pseudo-random string of characters that will be used as a prefix for names of resources you will provision in this exercise:
 
-   ```
-   export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+   ```sh
+   export PREFIX=$(echo `openssl rand -base64 5 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
    ```
 
 1. From the Cloud Shell pane, run the following to identify the Azure region hosting the target resource group and its existing resources: 
 
-   ```
+   ```sh
    export RESOURCE_GROUP_NAME_EXISTING='az300T0602-LabRG'
 
    export LOCATION=$(az group list --query "[?name == '${RESOURCE_GROUP_NAME_EXISTING}'].location" --output tsv)
@@ -238,7 +244,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to create an Azure Storage account and its container that will be used by the Event Grid subscription that you will configure in this task:
 
-   ```
+   ```sh
    export STORAGE_ACCOUNT_NAME="az300t06st3${PREFIX}"
 
    export CONTAINER_NAME="workitems"
@@ -250,13 +256,13 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to create a variable storing the value of the Resource Id property of the Azure Storage account:
 
-   ```
+   ```sh
    export STORAGE_ACCOUNT_ID=$(az storage account show --name "${STORAGE_ACCOUNT_NAME}" --query "id" --resource-group "${RESOURCE_GROUP_NAME}" -o tsv)
    ```
 
 1. From the Cloud Shell pane, run the following to create the Storage Account queue that will store messages generated by the Event Grid subscription that you will configure in this task:
 
-   ```
+   ```sh
    export QUEUE_NAME="az300t06q3${PREFIX}"
 
    az storage queue create --name "${QUEUE_NAME}" --account-name "${STORAGE_ACCOUNT_NAME}"
@@ -264,7 +270,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to create the Event Grid subscription that will facilitate generation of messages in Azure Storage queue in response to blob uploads to the designated container in the Azure Storage account:
 
-   ```
+   ```sh
    export QUEUE_SUBSCRIPTION_NAME="az300t06qsub3${PREFIX}"
 
    az eventgrid event-subscription create --name "${QUEUE_SUBSCRIPTION_NAME}" --included-event-types 'Microsoft.Storage.BlobCreated' --endpoint "${STORAGE_ACCOUNT_ID}/queueservices/default/queues/${QUEUE_NAME}" --endpoint-type "storagequeue" --source-resource-id "${STORAGE_ACCOUNT_ID}"
@@ -275,7 +281,7 @@ The main tasks for this exercise are as follows:
 
 1. From the Cloud Shell pane, run the following to upload a test blob to the Azure Storage account you created earlier in this task:
 
-   ```
+   ```sh
    export AZURE_STORAGE_ACCESS_KEY="$(az storage account keys list --account-name "${STORAGE_ACCOUNT_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --query "[0].value" --output tsv)"
 
    export WORKITEM='workitem2.txt'
@@ -297,16 +303,28 @@ The main tasks for this exercise are as follows:
 
 ## Exercise 3: Remove lab resources
 
-The main tasks for this exercise are as follows:
+#### Task 1: Open Cloud Shell
 
-1. Remove lab resources 
+1. At the top of the portal, click the **Cloud Shell** icon to open the Cloud Shell pane.
 
-#### Task 1: Remove lab resources 
+1. If needed, switch to the Bash shell session by using the drop down list in the upper left corner of the Cloud Shell pane.
 
-1. In the Azure portal, start the Bash session in the Cloud Shell.
-
-1. From the Cloud Shell pane, run the following to delete resource groups that host all resources that you provisioned in this lab
+1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to list all resource groups you created in this lab:
 
    ```
-for RESOURCE_GROUP_NAME in 'az300T0602-LabRG' 'az300T0603-LabRG' ; do     az group delete --name "${RESOURCE_GROUP_NAME}" --no-wait --yes; done
+   az group list --query "[?starts_with(name,'az300T06')]".name --output tsv
    ```
+
+1. Verify that the output contains only the resource groups you created in this lab. These groups will be deleted in the next task.
+
+#### Task 2: Delete resource groups
+
+1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to delete the resource groups you created in this lab
+
+   ```sh
+   az group list --query "[?starts_with(name,'az300T06')]".name --output tsv | xargs -L1 bash -c 'az group delete --name $0 --no-wait --yes'
+   ```
+
+1. Close the **Cloud Shell** prompt at the bottom of the portal.
+
+> **Result**: In this exercise, you removed the resources used in this lab.

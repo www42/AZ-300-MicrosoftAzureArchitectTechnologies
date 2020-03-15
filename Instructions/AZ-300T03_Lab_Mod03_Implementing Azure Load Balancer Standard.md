@@ -268,7 +268,7 @@ The main tasks for this exercise are as follows:
 
 1. Within the Remote Desktop session, start a Windows PowerShell session and run the following to determine your current public IP address:
 
-   ```
+   ```pwsh
    Invoke-RestMethod http://ipinfo.io/json 
    ```
 
@@ -325,7 +325,7 @@ The main tasks for this exercise are as follows:
 
 1. In the Azure portal, from the Cloud Shell pane, run the following to create an Azure Load Balancer Standard:
 
-   ```
+   ```sh
    LOCATION=$(az group show --name az3000801-LabRG --query location --out tsv)
    az network lb create --resource-group az3000801-LabRG --name az3000802-lb --sku standard --backend-pool-name az3000802-bepool --frontend-ip-name loadBalancedFrontEndOutbound --location $LOCATION --public-ip-address az3000802-lb-pip01
    ```
@@ -375,7 +375,7 @@ The main tasks for this exercise are as follows:
 
 1. Within the Remote Desktop session to **az3000802-vm0**, start a Windows PowerShell session and run the following to determine your current public IP address:
 
-   ```
+   ```pwsh
    Invoke-RestMethod http://ipinfo.io/json 
    ```
 
@@ -383,3 +383,32 @@ The main tasks for this exercise are as follows:
 
 
 > **Result**: After you completed this exercise, you have configured and tested Azure Load Balancer Standard outbound rules 
+
+
+## Exercise 3: Remove lab resources
+
+#### Task 1: Open Cloud Shell
+
+1. At the top of the portal, click the **Cloud Shell** icon to open the Cloud Shell pane.
+
+1. If needed, switch to the Bash shell session by using the drop down list in the upper left corner of the Cloud Shell pane.
+
+1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to list all resource groups you created in this lab:
+
+   ```
+   az group list --query "[?starts_with(name,'az30008')]".name --output tsv
+   ```
+
+1. Verify that the output contains only the resource groups you created in this lab. These groups will be deleted in the next task.
+
+#### Task 2: Delete resource groups
+
+1. At the **Cloud Shell** command prompt, type in the following command and press **Enter** to delete the resource groups you created in this lab
+
+   ```sh
+   az group list --query "[?starts_with(name,'az30008')]".name --output tsv | xargs -L1 bash -c 'az group delete --name $0 --no-wait --yes'
+   ```
+
+1. Close the **Cloud Shell** prompt at the bottom of the portal.
+
+> **Result**: In this exercise, you removed the resources used in this lab.
