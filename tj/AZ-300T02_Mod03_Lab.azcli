@@ -1,28 +1,102 @@
-az --version | grep azure-cli
-az account list
+# ---------------------------------------------------
+# Lab: Configuring VNet peering and service chaining
+# ---------------------------------------------------
 
+az version
+SubscriptionId='9c5ec55f-11f8-4baf-9460-ae5f3888346e'
+az account set --subscription $SubscriptionId
+az account list -o table
+az login
+
+# Exercise 1: Creating an Azure lab environment by using deployment templates
+# ---------------------------------------------------------------------------
+# Task 1: Create the first Azure virtual network environment by using an Azure Resource Manager template
 Location="westeurope"
 az group create --resource-group az3000401-LabRG --location $Location
 az group create --resource-group az3000402-LabRG --location $Location
 az group list -o table
 
+ll allfiles/AZ-300T02/Module_03/azuredeploy04*
 
-# Upload the first Azure Resource Manager template \allfiles\AZ-300T02\Module_03\azuredeploy0401.json into the home directory.
-# Upload the parameter file \allfiles\AZ-300T02\Module_03\azuredeploy04.parameters.json into the home directory.
+az deployment group create --resource-group az3000401-LabRG \
+                           --template-file allfiles/AZ-300T02/Module_03/azuredeploy0401.json \
+                           --parameters   @allfiles/AZ-300T02/Module_03/azuredeploy04.parameters.json \
+                           --parameters vmSize=Standard_F2s_v2 \
+                           --no-wait
+# Do not wait.
 
-ll ~/azuredeploy04*
-
-az group deployment create --resource-group az3000401-LabRG \
-                           --template-file azuredeploy0401.json \
-                           --parameters @azuredeploy04.parameters.json --no-wait
+# Task 2: Create the second Azure virtual network environment by using an Azure Resource Manager template
+az deployment group create --resource-group az3000402-LabRG \
+                           --template-file allfiles/AZ-300T02/Module_03/azuredeploy0402.json \
+                           --parameters   @allfiles/AZ-300T02/Module_03/azuredeploy04.parameters.json \
+                           --parameters vmSize=Standard_F2s_v2 \
+                           --no-wait
 # Do not wait.
 
 
-# Upload the second Azure Resource Manager template \allfiles\AZ-300T02\Module_03\azuredeploy0402.json into the home directory.
+# Exercise 2: Configuring VNet peering
+# ------------------------------------
+# Task 1: Configure VNet peering for both virtual networks
+SpokeVnetId=$(az network vnet show --name az3000402-vnet --resource-group az3000402-LabRG --query id -o tsv)
+az network vnet peering create \
+    --name az3000401-vnet-to-az3000402-vnet \
+    --resource-group az3000401-LabRG \
+    --vnet-name az3000401-vnet \
+    --remote-vnet $SpokeVnetId \
+    --allow-vnet-access
 
-ll ~/azuredeploy04*
+HubVnetId=$(az network vnet show --name az3000401-vnet --resource-group az3000401-LabRG --query id -o tsv)
+az network vnet peering create \
+    --name az3000402-vnet-to-az3000401-vnet \
+    --resource-group az3000402-LabRG \
+    --vnet-name az3000402-vnet \
+    --remote-vnet $HubVnetId \
+    --allow-vnet-access
 
-az group deployment create --resource-group az3000402-LabRG \
-                           --template-file azuredeploy0402.json \
-                           --parameters @azuredeploy04.parameters.json --no-wait
-# Do not wait.
+
+# Exercise 3: Implementing routing
+# --------------------------------
+# Task 1: Enable IP forwarding
+az network nic show --name az3000401-nic2 --resource-group az3000401-LabRG \
+        --query '{name:name,enableIpForwarding:enableIpForwarding}' -o table
+
+az network nic update --name az3000401-nic2 --resource-group az3000401-LabRG --ip-forwarding true
+
+# Task 2: Configure user defined routing
+az network route-table create \
+        --name az3000402-rt1 \
+        --resource-group az3000402-LabRG \
+        --location $Location \
+        --disable-bgp-route-propagation true
+
+az network route-table route create \
+        --name custom-route-to-az3000401-vnet \
+        --route-table-name az3000402-rt1 \
+        --resource-group az3000402-LabRG \
+        --address-prefix 10.0.0.0/22 \
+        --next-hop-type VirtualAppliance \
+        --next-hop-ip-address 10.0.1.4
+
+az network vnet subnet update \
+        --name subnet-1 \
+        --vnet-name az3000402-vnet \
+        --resource-group az3000402-LabRG \
+        --route-table az3000402-rt1
+
+# Task 3: Configure routing on an Azure VM running Windows Server 2016
+#    RDP to az3000401-vm2 
+#    install server role 'Remote Access'
+#    RRAS custom config LAN routing
+
+# Exercise 4: Validating service chaining
+# ----------------------------------------
+# Task 1: Configure Windows Firewall with Advanced Security on the target Azure VM
+#    Disable Windows Firewall on all three VMs
+
+# Task 2: Test service chaining between peered virtual networks
+#    RDP to az3000402-vm1 
+#    Test-NetConnection -ComputerName 10.0.0.4 -TraceRoute
+
+
+# Exercise 5: Remove lab resources
+# --------------------------------
