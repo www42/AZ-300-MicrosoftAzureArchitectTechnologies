@@ -2,7 +2,8 @@
 # =============================================================================
 # Task 1
 # -------
-export PREFIX=$(echo `openssl rand 5 -base64 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+export PREFIX=$(echo `openssl rand -base64 5 | cut -c1-7 | tr '[:upper:]' '[:lower:]' | tr -cd '[[:alnum:]]._-'`)
+
 echo $PREFIX
 
 export LOCATION='westeurope'
