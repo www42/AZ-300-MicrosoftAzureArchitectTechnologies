@@ -65,7 +65,7 @@ The main tasks for this exercise are as follows:
 1. From the Cloud Shell pane, deploy an Azure VM hosting Windows Server 2016 Datacenter into the first virtual network by running:
 
    ```
-   az group deployment create --resource-group az3000501-LabRG --template-file azuredeploy05.json --parameters @azuredeploy05.parameters.json
+   az deployment group create --resource-group az3000501-LabRG --template-file azuredeploy05.json --parameters @azuredeploy05.parameters.json
    ```
 
    > **Note**: Wait for the deployment to complete. This might take about 5 minutes.
@@ -137,7 +137,7 @@ The main tasks for this exercise are as follows:
 
    ```pwsh
    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-   Install-Module -Name PowerShellGet -AllowPrerelease -SkipPublisherCheck
+   Install-Module -Name PowerShellGet -SkipPublisherCheck
    ```
 
 1. From the PowerShell prompt, run the following to install the the pre-release version of the AzureRM.ManagedServiceIdentity module:
@@ -170,7 +170,7 @@ The main tasks for this exercise are as follows:
    (Get-AzVM -ResourceGroupName az3000501-LabRG -Name az3000501-vm).Identity
    ```
 
-   > **Note**: If you receive an error message indicating insufficient privileges, from the PowerShell prompt, run
+     > **Note**: If you receive an error message indicating insufficient privileges, from the PowerShell prompt, run
    
    ```pwsh
    Remove-AzAccount
